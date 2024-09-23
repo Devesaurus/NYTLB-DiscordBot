@@ -352,7 +352,7 @@ async function printLeaderboard() {
     const channel = client.channels.cache.get(noSwearId);
     let data = await leaderboard();
     console.log(data);
-    channel.send(data);
+    //channel.send(data);
 }
 
 const serverId = "426214681208946688";
@@ -543,9 +543,11 @@ client.on('interactionCreate', async (interaction) => {
         let username = interaction.user.username;
         let average = await myAverage(username);
         if(average < 0) {
-            interaction.reply("You haven't played any");
+            await interaction.reply("You haven't played any");
         }
-        interaction.reply("Average: " + average + " seconds");
+        else {
+            await interaction.reply("Average: " + average + " seconds");
+        }
     }
 })
 
