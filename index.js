@@ -354,9 +354,6 @@ async function printLeaderboard() {
     console.log(data);
 <<<<<<< HEAD
     //channel.send(data);
-=======
-    channel.send(data);
->>>>>>> 0a5c0433693bb1b7cb85867666143669e9b28009
 }
 
 const serverId = "426214681208946688";
