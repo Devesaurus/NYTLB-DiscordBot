@@ -1,0 +1,30 @@
+{
+  "name": "discordbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r dotenv/config index.js",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.1",
+    "@google-cloud/local-auth": "^2.1.0",
+    "axios": "^1.6.5",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "ffmpeg-static": "^5.2.0",
+    "google-spreadsheet": "^4.1.1",
+    "googleapis": "^105.0.0",
+    "libsodium-wrappers": "^0.7.13",
+    "node": "^20.14.0",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.0.2",
+    "cross-env": "^7.0.3",
+    "tesseract.js": "^5.1.0"
+  }
+}
