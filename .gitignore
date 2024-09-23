@@ -1,3 +1,6 @@
 node_modules
 .env
+<<<<<<< HEAD
 serviceAccount.json
+=======
+>>>>>>> 0a5c0433693bb1b7cb85867666143669e9b28009
