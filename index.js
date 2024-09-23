@@ -5,6 +5,7 @@ const { EmbedBuilder } = require('discord.js');
 const T = require("tesseract.js");
 const cron = require("node-cron");
 const { joinVoiceChannel } = require('@discordjs/voice');
+const http = require('http');
 
 const client = new Client( {
     intents: [
@@ -612,6 +613,16 @@ client.on('error', (error) => {
     console.error("Error: ", error);
 
     client.login(process.env.TOKEN);
+});
+
+// Create a simple HTTP server to listen on a port
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Bot is running');
+});
+
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 3000}`);
 });
 
 // MATH COMMAND STUFF ///////////////////////////////////////
