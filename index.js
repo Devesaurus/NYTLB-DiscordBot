@@ -23,29 +23,30 @@ const path = require('path');
 const process = require('process');
 const {google} = require('googleapis');
 
+const SERVICE_ACCOUNT_KEY_FILE = 'serviceAccount.json'; 
+
 async function loadCredentials() {
-    const jsonFilePath = path.join(__dirname, 'serviceAccount.json');
-    const credentials = await fs.readFile(jsonFilePath, 'utf8');
-    return JSON.parse(credentials);
+    const content = await fs.readFile(SERVICE_ACCOUNT_KEY_FILE, 'utf-8');
+    return JSON.parse(content);
 }
 
 /**
- * Load or request authorization to call APIs.
+ * Load or request or authorization to call APIs.
+ *
  */
-async function authorize() {
+ async function authorize() {
     // Load service account credentials from file
     const credentials = await loadCredentials(); 
     // Create an authenticated GoogleAuth client using service account
     const auth = new google.auth.GoogleAuth({
         credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']    
     });
     // Get the client that is authorized to make requests
     const client = await auth.getClient();
     // Return the authorized client
     return client;
 }
-
 async function keys(auth) {
     const sheets = google.sheets({version: 'v4', auth});
     let range = sheet + "!1:1";
