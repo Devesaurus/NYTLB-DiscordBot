@@ -17,7 +17,7 @@ const client = new Client( {
 })
 
 GLOBAL_DATE = new Date();
-sheet = 'Sheet9';
+sheet = 'Sheet10';
 
 const fs = require('fs').promises;
 const path = require('path');
@@ -136,7 +136,7 @@ async function leaderboard() {
     .sort((a, b) => b.wins - a.wins)
     .map(score => `${score.name}: ${score.wins}`)
     .join('\n');
-    const formattedResult = `SCORES(8/24):\n\n${result}`;
+    const formattedResult = `SCORES(10/24):\n\n${result}`;
     return formattedResult;
 }
 
