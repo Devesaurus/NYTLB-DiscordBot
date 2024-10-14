@@ -483,6 +483,12 @@ async function setDelay(delay) {
     console.log("Waited for " + delay + " ms");
 }
 
+function restart() {
+    console.log("Restarting bot");
+    client.destroy();
+    process.exit(0);
+}
+
 client.on('ready', async () => {    
     joinSW();
     await updateDate();
@@ -549,6 +555,11 @@ client.on('interactionCreate', async (interaction) => {
         else {
             await interaction.reply("Average: " + average + " seconds");
         }
+    }
+    else if(interaction.commandName === 'restart') {
+        restart();
+        client.login(process.env.TOKEN);
+        await interaction.reply("Restarting");
     }
 })
 

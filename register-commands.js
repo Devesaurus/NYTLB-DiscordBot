@@ -35,6 +35,10 @@ const commands = [
         description: "shows your average for the month"
     },
     {
+        name: 'restart',
+        description: "restarts the bot"
+    },
+    {
         name: 'trivia',
         description: 'trivia questions'
     },
