@@ -16,8 +16,24 @@ const client = new Client( {
     ],
 })
 
-GLOBAL_DATE = new Date();
-sheet = 'Dec24';
+const monthList = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+"Jul", "Aug", "Sep", "Nov", "Oct", "Dec"];
+
+GLOBAL_DATE = null;
+
+// Function to calculate what the current sheet in the spreadsheet should be
+function calculateSheet() {
+    GLOBAL_DATE = new Date();
+    
+    year = GLOBAL_DATE.getUTCFullYear() % 100;
+    month = String(GLOBAL_DATE.getUTCMonth()).padStart(2, '0');
+
+    sheet = monthList[month] + year;
+
+    return sheet;
+}
+
+sheet = calculateSheet();
 
 const fs = require('fs').promises;
 const path = require('path');
@@ -69,8 +85,13 @@ async function getColumn(auth, column) {
     const sheets = google.sheets({version: 'v4', auth});
     
     let columnLetter; 
-    //console.log(column);
-    if(column >= 26) {
+    //console.log("Column: " + column);
+
+    if(column < 0) {
+        console.log("Invalid column number");
+        return -1;
+    }
+    else if(column >= 26) {
         const firstLetter = String.fromCharCode(64 + (column / 26));
         const secondLetter = String.fromCharCode(64 + (column % 26));
         
@@ -141,6 +162,7 @@ async function leaderboard() {
 }
 
 async function leaderboardToday() {
+    console.log("Leaderboardtoday call");
     let headers = await authorize().then(keys); // Gets the keys of the spreadsheet
     let dateIndex = await searchData(headers[0], GLOBAL_DATE); // Find index of desired date
     let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex)}); // dateIndex + 1 because 0 indexed
@@ -180,6 +202,31 @@ async function leaderboardToday() {
     console.log(scores);
 
     return scores;
+}
+
+async function leaderboardAllTime() {
+    sheet = "ALLTIME"
+    let headers = await authorize().then(keys); // Gets the keys of the spreadsheet
+    let nameIndex = await searchData(headers[0], "Name"); // Finds index of name in spreadsheet
+    let winIndex = await searchData(headers[0], "Wins"); // Finds index of wins in spreadsheet 
+    
+    // Gets the column data for "Name" and "Wins", must be +1ed because it is 1 indexed
+    let nameCol = await authorize().then(auth => {return getColumn(auth, nameIndex)});
+    let winsCol = await authorize().then(auth => {return getColumn(auth, winIndex)});
+
+    const names = nameCol.flat().slice(1);
+    const wins = winsCol.flat().slice(1);
+
+    const scores = names.map((name, index) => ({ name, wins: parseFloat(wins[index], 10) }));
+    console.log(scores);
+    const result = scores
+    .filter(score => score.wins > 0)
+    .sort((a, b) => b.wins - a.wins)
+    .map((score, index) => `${index + 1}. ${score.name}: ${score.wins}`)
+    .join('\n');
+    const formattedResult = `ALL TIME SCORES:\n\n${result}`;
+    sheet = calculateSheet();
+    return formattedResult;
 }
 
 async function findWinner() {
@@ -226,7 +273,6 @@ async function updateLeaderboard(auth, name) {
         console.log("member undefined");
         return -1;
     }
-
     let mention = "<@" + member.user.id + ">";
     channel.send(mention + " WON! (" + GLOBAL_DATE + ")");
 
@@ -245,8 +291,48 @@ async function updateLeaderboard(auth, name) {
             values: [[updatedWinCount]],
         },
     });
-
     console.log(updateResponse.status + "\n" + updateResponse.statusText);
+
+    // Update all time leaderboard 
+    sheet = "ALLTIME"
+
+    let nameColAT = await authorize().then(auth => {return getColumn(auth, 1)}); 
+    let nameIndexAT = await searchData(nameColAT, name);
+    
+    if(nameIndex < 0) {
+        console.log("Name not found");
+        return -1;
+    }
+
+    let usernameColAT = await authorize().then(auth => {return getColumn(auth, 0)});
+
+    let winnerUsernameAT = usernameColAT[nameIndexAT][0];
+
+    let memberAT = members.find(member => member.user.username === winnerUsernameAT);
+
+    if(memberAT === undefined) {
+        console.log("member undefined");
+        return -1;
+    }
+
+    let winsColAT = await authorize().then(auth => {return getColumn(auth, 2)});
+    let updatedWinCountAT = winsColAT[nameIndexAT][0];
+    updatedWinCountAT++;
+    nameIndexAT++;
+
+    range = sheet + "!C" + nameIndexAT;
+
+    const updateResponseAT = await sheets.spreadsheets.values.update({
+        spreadsheetId: '1pSpHpMWu9JqE0LOlLX6g1CpQGd6m_ixlvdUdw4poeNc',
+        range,
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+            values: [[updatedWinCountAT]],
+        },
+    });
+
+    console.log(updateResponseAT.status + "\n" + updateResponseAT.statusText);
+
 }
 
 async function appendData(auth, username, date, time) {
@@ -491,8 +577,8 @@ function restart() {
 
 client.on('ready', async () => {    
     joinSW();
-    await updateDate();
     await addDateColumn();
+
     cron.schedule('0 19 * * 1-5', async () => {
         const channel = client.channels.cache.get(noSwearId);
         await updateLeaderboardWithWinner();
@@ -515,7 +601,6 @@ client.on('ready', async () => {
             printLeaderboard();
         }
     });
-    console.log("GLOBAL DATE: " + GLOBAL_DATE);
     console.log('The bot is ready');
 })
 
@@ -544,6 +629,10 @@ client.on('interactionCreate', async (interaction) => {
     }
     else if(interaction.commandName === 'leaderboardtoday') {
         let data = await leaderboardToday();
+        interaction.reply(data);
+    }
+    else if(interaction.commandName === 'leaderboardalltime') {
+        let data = await leaderboardAllTime();
         interaction.reply(data);
     }
     else if(interaction.commandName === 'average') {

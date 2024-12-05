@@ -39,6 +39,10 @@ const commands = [
         description: "restarts the bot"
     },
     {
+        name: 'leaderboardalltime',
+        description: "all time leaderboard"
+    },
+    {
         name: 'trivia',
         description: 'trivia questions'
     },
