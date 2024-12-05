@@ -29,7 +29,7 @@ function calculateSheet() {
     month = String(GLOBAL_DATE.getUTCMonth()).padStart(2, '0');
 
     sheet = monthList[month] + year;
-
+    updateDate();
     return sheet;
 }
 
@@ -335,7 +335,7 @@ async function updateLeaderboard(auth, name) {
 
 }
 
-async function appendData(auth, username, date, time) {
+async function appendData(auth, username, date, time) {    
     const sheets = google.sheets({version: 'v4', auth});
     let usernameCol = await authorize().then(auth => {return getColumn(auth, 0)});
     let headers = await authorize().then(keys);
