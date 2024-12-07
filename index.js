@@ -332,7 +332,7 @@ async function updateLeaderboard(auth, name) {
     });
 
     console.log(updateResponseAT.status + "\n" + updateResponseAT.statusText);
-
+    sheet = calculateSheet();
 }
 
 async function appendData(auth, username, date, time) {    
