@@ -165,7 +165,7 @@ async function leaderboardToday() {
     console.log("Leaderboardtoday call");
     let headers = await authorize().then(keys); // Gets the keys of the spreadsheet
     let dateIndex = await searchData(headers[0], GLOBAL_DATE); // Find index of desired date
-    let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex)}); // dateIndex + 1 because 0 indexed
+    let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex + 1)}); // dateIndex + 1 because 0 indexed
     let nameIndex = await(searchData(headers[0], "Name"));
     let nameCol = await authorize().then(auth => {return getColumn(auth, nameIndex)})
 
