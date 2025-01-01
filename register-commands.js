@@ -43,6 +43,18 @@ const commands = [
         description: "all time leaderboard"
     },
     {
+        name: 'leaderboardmonth',
+        description: 'leaderboard for specific month',
+        options: [
+            {
+                name: 'month',
+                description: 'Month in format: Dec25, Jan25',
+                type: 3,
+                required: true,
+            },
+        ],
+    },
+    {
         name: 'trivia',
         description: 'trivia questions'
     },

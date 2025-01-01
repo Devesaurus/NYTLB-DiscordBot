@@ -26,10 +26,13 @@ function calculateSheet() {
     GLOBAL_DATE = new Date();
     
     year = GLOBAL_DATE.getUTCFullYear() % 100;
-    month = String(GLOBAL_DATE.getUTCMonth()).padStart(2, '0');
+    // console.log("year: " + year);
+    month = String(GLOBAL_DATE.getUTCMonth());
+    // console.log("Month: " + month);
 
     sheet = monthList[month] + year;
     updateDate();
+    console.log("Sheet: " + sheet);
     return sheet;
 }
 
@@ -64,6 +67,35 @@ async function loadCredentials() {
     // Return the authorized client
     return client;
 }
+
+async function checkSheetExists(auth, spreadsheetId, sheetName) {
+    const sheets = google.sheets('v4');
+
+    try {
+        // Fetch spreadsheet metadata
+        const response = await sheets.spreadsheets.get({
+            auth,
+            spreadsheetId,
+            fields: 'sheets(properties(title))', // Only fetch sheet titles
+        });
+
+        const sheetTitles = response.data.sheets.map(sheet => sheet.properties.title);
+        console.log(sheetName);
+        // Check if the sheet name exists
+        for(i = 0; i < sheetTitles.length; i++) {
+            if(sheetTitles[i] === sheetName) {
+                console.log(sheetName + " Exists");
+                return true;
+            }
+        }
+        return false;
+    }
+    catch(error) {
+        console.log(error);
+        console.log("Error checking if sheet exists");
+    }
+}
+
 async function keys(auth) {
     const sheets = google.sheets({version: 'v4', auth});
     let range = sheet + "!1:1";
@@ -644,6 +676,24 @@ client.on('interactionCreate', async (interaction) => {
         else {
             await interaction.reply("Average: " + average + " seconds");
         }
+    }
+    else if(interaction.commandName === 'leaderboardmonth') {
+        const { commandName, options } = interaction;
+        const month = options.getString('month'); // Gets specified month / sheet
+
+        const exists = await authorize().then(async (auth) => {
+            return await checkSheetExists(auth, '1pSpHpMWu9JqE0LOlLX6g1CpQGd6m_ixlvdUdw4poeNc', month);
+        });
+
+        if (exists) {
+            sheet = month;
+            let data = await leaderboard();
+            data = data.replace(/^[^\n]+/, `SCORES(${month})`);            
+            await interaction.reply(data);
+        } else {
+            await interaction.reply(`The sheet for month "${month}" does not exist.`);
+        }
+        sheet = calculateSheet();
     }
     else if(interaction.commandName === 'restart') {
         restart();
