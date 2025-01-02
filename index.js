@@ -754,7 +754,20 @@ client.on('messageCreate', async message => {
                     await worker.terminate();
                 })();
             }
+
         }     
+    }
+    else {
+        let loser = "mondoduplantis628";
+        let loser2 = "brokenmotor";
+        if(message.mentions.repliedUser.username === loser || message.mentions.repliedUser.username === loser2) {
+            try {
+                await message.react('<:customemoji:761079946469834802>');
+            }
+            catch(error) {
+                console.log("Failed to react to message");
+            }
+        }
     }
 })
 client.login(process.env.TOKEN);
