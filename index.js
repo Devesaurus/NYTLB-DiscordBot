@@ -124,9 +124,8 @@ async function getColumn(auth, column) {
         return -1;
     }
     else if(column >= 26) {
-        const firstLetter = String.fromCharCode(64 + (column / 26));
-        const secondLetter = String.fromCharCode(64 + (column % 26));
-        
+        const firstLetter = String.fromCharCode(64 + Math.floor((column - 1) / 26));
+        const secondLetter = String.fromCharCode(65 + ((column - 1) % 26));
         columnLetter = firstLetter + secondLetter;
     }
     else {
@@ -197,7 +196,7 @@ async function leaderboardToday() {
     console.log("Leaderboardtoday call");
     let headers = await authorize().then(keys); // Gets the keys of the spreadsheet
     let dateIndex = await searchData(headers[0], GLOBAL_DATE); // Find index of desired date
-    let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex + 1)}); // dateIndex + 1 because 0 indexed
+    let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex)}); // dateIndex + 1 because 0 indexed
     let nameIndex = await(searchData(headers[0], "Name"));
     let nameCol = await authorize().then(auth => {return getColumn(auth, nameIndex)})
 
@@ -744,8 +743,19 @@ client.on('messageCreate', async message => {
                             time = (parseInt(splitString[0]) * 60) + (parseInt(splitString[1]));
                         }
                         if(date === GLOBAL_DATE) {
-                            message.reply("TIME: " + newTime);
+                            const replyTime = await message.reply("TIME: " + newTime);
                             authorize().then(auth => {appendData(auth, username, date, time)}); // Appends data to the spreadsheet, based on username, date, and time
+                            
+                            let loser = "mondoduplantis628";
+                            let loser2 = "brokenmotor";
+                            if(replyTime.mentions.repliedUser.username === loser || replyTime.mentions.repliedUser.username === loser2) {
+                                try {
+                                    await replyTime.react('<:customemoji:761079946469834802>');
+                                }
+                                catch(error) {
+                                    console.log("Failed to react to message");
+                                }
+                            } 
                         }
                         else {
                             message.reply("Invalid date");
@@ -756,18 +766,6 @@ client.on('messageCreate', async message => {
             }
 
         }     
-    }
-    else {
-        let loser = "mondoduplantis628";
-        let loser2 = "brokenmotor";
-        if(message.mentions.repliedUser.username === loser || message.mentions.repliedUser.username === loser2) {
-            try {
-                await message.react('<:customemoji:761079946469834802>');
-            }
-            catch(error) {
-                console.log("Failed to react to message");
-            }
-        }
     }
 })
 client.login(process.env.TOKEN);
