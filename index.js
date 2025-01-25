@@ -114,37 +114,37 @@ async function keys(auth) {
 }
 
 async function getColumn(auth, column) {
-    const sheets = google.sheets({version: 'v4', auth});
-    
-    let columnLetter; 
-    //console.log("Column: " + column);
-
-    if(column < 0) {
+    const sheets = google.sheets({ version: 'v4', auth });
+    if (column < 0) {
         console.log("Invalid column number");
         return -1;
     }
-    else if(column >= 26) {
-        const firstLetter = String.fromCharCode(64 + Math.floor((column - 1) / 26));
-        const secondLetter = String.fromCharCode(65 + ((column - 1) % 26));
-        columnLetter = firstLetter + secondLetter;
+    // Convert column number to letter(s)
+    let columnLetter = "";
+    while (column >= 0) {
+        columnLetter = String.fromCharCode((column % 26) + 65) + columnLetter;
+        column = Math.floor(column / 26) - 1;
     }
-    else {
-        columnLetter = String.fromCharCode(65 + column);
-    }
-    //console.log(columnLetter);
-    let range = sheet + "!" + columnLetter + ":" + columnLetter;
 
-    const res = await sheets.spreadsheets.values.get({
-        spreadsheetId: '1pSpHpMWu9JqE0LOlLX6g1CpQGd6m_ixlvdUdw4poeNc',
-        range: range,
-    });
-    const cols = res.data.values;
-    if (!cols || cols.length === 0) {
-        console.log('No data found.');
-        return;
+    // Define range
+    let range = `${sheet}!${columnLetter}:${columnLetter}`;
+
+    // Fetch data from the specified column
+    try {
+        const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: '1pSpHpMWu9JqE0LOlLX6g1CpQGd6m_ixlvdUdw4poeNc',
+            range: range,
+        });
+        const cols = res.data.values;
+        if (!cols || cols.length === 0) {
+            console.log("No data found.");
+            return null;
+        }
+        return cols;
+    } catch (error) {
+        console.error("Error fetching column data:", error);
+        return null;
     }
-    //console.log(cols);
-    return cols;
 }
 
 async function getRow(auth, row) {
@@ -194,6 +194,7 @@ async function leaderboard() {
 
 async function leaderboardToday() {
     console.log("Leaderboardtoday call");
+    console.log("Today: " + GLOBAL_DATE);
     let headers = await authorize().then(keys); // Gets the keys of the spreadsheet
     let dateIndex = await searchData(headers[0], GLOBAL_DATE); // Find index of desired date
     let dateCol = await authorize().then(auth => {return getColumn(auth, dateIndex)}); // dateIndex + 1 because 0 indexed
