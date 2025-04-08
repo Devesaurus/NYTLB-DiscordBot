@@ -418,16 +418,19 @@ async function appendData(auth, username, date, time) {
             let cell = sheet + "!A" + nextUserIndex;
             let cell2 = sheet + "!" + dateLetter + nextUserIndex;
             let cell3 = sheet + "!" + winLetter + nextUserIndex;
+            let cell4 = sheet + "!B" + nextUserIndex;
 
             let cellRanges = [
                 cell,
                 cell2,
-                cell3
+                cell3,
+                cell4
             ]
             let values = [
                 username,
                 time,
                 "0",
+                "Unknown",
             ];
 
             const requestBody = {
@@ -444,6 +447,10 @@ async function appendData(auth, username, date, time) {
                     range: cellRanges[2],
                     values: [[values[2]]],
                   },
+                  {
+                    range: cellRanges[3],
+                    values: [[values[3]]],
+                  }
                 ],
                 valueInputOption: 'USER_ENTERED',
               }
@@ -599,6 +606,27 @@ async function updateLeaderboardWithWinner() {
 async function setDelay(delay) {
     await new Promise(resolve => setTimeout(resolve, delay));
     console.log("Waited for " + delay + " ms");
+}
+
+async function insertAt(str, index, insertion) {
+    return str.slice(0, index) + insertion + str.slice(index);
+}
+  
+
+async function mobileCheck(message) {
+    console.log("Mobile check");
+    // Edit a copy of GLOBAL_DATE from 0X/MM/YY format to X/MM/YY format
+    let modifiedGlobalDate = GLOBAL_DATE.slice(1, GLOBAL_DATE.length);
+    modifiedGlobalDate = await insertAt(modifiedGlobalDate, 5, "20");
+    const pattern = `^I solved the ${modifiedGlobalDate} New York Times Mini Crossword in \\d+:\\d{2}!`;
+    const regex = new RegExp(pattern);
+
+    //console.log("Modified Global Date:", modifiedGlobalDate);
+    //console.log("Regex pattern:", pattern);
+    //console.log("Message:      ", message);
+    //console.log("Regex test: " + regex.test(message));
+
+    return regex.test(message);
 }
 
 function restart() {
@@ -766,7 +794,28 @@ client.on('messageCreate', async message => {
                 })();
             }
 
-        }     
+        }
+        else if(await mobileCheck(string)) {
+            let username = message.author.username; // Username 
+            date = GLOBAL_DATE;
+            const match = string.match(/in (\d+):(\d{2})!/);
+            if (!match) return null;
+              
+            const minutes = parseInt(match[1], 10);
+            const seconds = parseInt(match[2], 10);
+            const time = minutes * 60 + seconds;
+
+            if(time > 60) {
+                message.reply("TIME: " + minutes + ":" + seconds);
+            }
+            else if(time < 60) {
+                message.reply("TIME: " + seconds + " seconds");
+            }
+            else {
+                message.reply("TIME: " + minutes + ":" + seconds + seconds);
+            }
+            authorize().then(auth => {appendData(auth, username, date, time)}); // Appends data to the spreadsheet, based on username, date, and time
+        }
     }
 })
 client.login(process.env.TOKEN);
